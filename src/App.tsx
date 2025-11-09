@@ -8,7 +8,7 @@ import { ShowManagerNew } from './components/ShowManagerNew';
 import { CueSheet } from './components/CueSheet';
 import { Documents } from './components/Documents';
 import { Musicians } from './components/Musicians';
-import { VenueVisualizer } from './components/VenueVisualizer';
+import { VenueManager } from './components/VenueManager';
 import { Logo3D } from './components/Logo3D';
 import { ImportManager } from './components/ImportManager';
 import './App.css';
@@ -239,7 +239,7 @@ function App() {
           />
         )}
         {activeTab === 'venue' && (
-          <VenueVisualizer
+          <VenueManager
             layout={venueLayout}
             musicians={musicians}
             onSaveLayout={handleSaveVenueLayout}
