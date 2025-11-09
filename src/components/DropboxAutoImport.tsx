@@ -60,14 +60,45 @@ export const DropboxAutoImport: React.FC<DropboxAutoImportProps> = ({ onImportCo
       // 3. Générer des liens temporaires avec files/get_temporary_link
       // 4. Organiser par année basé sur la structure des dossiers
 
-      // Exemple de structure de scan simulé
-      const mockFiles = [
-        { year: 2024, name: 'Nocturne Op.9 No.2.mp3', type: 'audio' },
-        { year: 2024, name: 'Nocturne Op.9 No.2.pdf', type: 'sheet' },
-        { year: 2024, name: 'Clair de Lune.mp3', type: 'audio' },
-        { year: 2023, name: 'Fantaisie-Impromptu.wav', type: 'audio' },
-        { year: 2023, name: 'Fantaisie-Impromptu.pdf', type: 'sheet' },
-      ];
+      // Charger les vraies données Dropbox depuis le JSON
+      let realDropboxFiles: any[] = [];
+      try {
+        const response = await fetch('/dropbox_audio_list.json');
+        const dropboxData = await response.json();
+        
+        // Parser les données Dropbox réelles
+        realDropboxFiles = dropboxData.map((item: any) => {
+          const fileName = item.dig_truncate__singleline;
+          const url = item.dig_link_url;
+          
+          // Extraire le titre de la chanson (enlever le numéro et l'extension)
+          const songName = fileName
+            .replace(/^\d+[A-Z]?\s*-\s*/, '') // Enlève "1 - " ou "1A - "
+            .replace(/\.(mp3|wav|pdf|jpg|png)$/i, '') // Enlève l'extension
+            .replace(/_/g, ' ') // Remplace les underscores
+            .trim();
+          
+          return {
+            year: 2024, // Année par défaut (vous pouvez ajuster)
+            name: fileName,
+            songTitle: songName,
+            type: fileName.match(/\.(mp3|wav)$/i) ? 'audio' : 'sheet',
+            url: url.replace('?dl=0', '?raw=1'), // Pour download direct
+            size: item.dig_text_1,
+            date: item.dig_text,
+          };
+        });
+      } catch (err) {
+        console.warn('Fichier JSON Dropbox non trouvé, utilisation des données de simulation');
+        // Fallback sur données simulées si le JSON n'est pas trouvé
+        realDropboxFiles = [
+          { year: 2024, name: 'Nocturne Op.9 No.2.mp3', type: 'audio', songTitle: 'Nocturne Op.9 No.2' },
+          { year: 2024, name: 'Nocturne Op.9 No.2.pdf', type: 'sheet', songTitle: 'Nocturne Op.9 No.2' },
+          { year: 2024, name: 'Clair de Lune.mp3', type: 'audio', songTitle: 'Clair de Lune' },
+        ];
+      }
+      
+      const mockFiles = realDropboxFiles;
 
       // Grouper par nom de chanson
       const songsByName = new Map<string, { audio: any[], sheets: any[], year: number }>();
@@ -113,7 +144,7 @@ export const DropboxAutoImport: React.FC<DropboxAutoImportProps> = ({ onImportCo
           const audio: AudioFile = {
             id: generateId(),
             name: audioFile.name,
-            url: `${dropboxFolderUrl}/Audio/${audioFile.year}/${audioFile.name}?raw=1`,
+            url: audioFile.url || `${dropboxFolderUrl}/Audio/${audioFile.year}/${audioFile.name}?raw=1`,
             type: 'recording',
             duration: 0,
             uploadedAt: new Date(),

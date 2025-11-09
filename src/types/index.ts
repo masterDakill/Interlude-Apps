@@ -149,6 +149,9 @@ export interface Musician {
   phone?: string;
   notes?: string;
   avatar?: string;
+  needsMic?: boolean;
+  needsDI?: boolean;
+  needsInputMic?: boolean;
   createdAt: Date;
 }
 

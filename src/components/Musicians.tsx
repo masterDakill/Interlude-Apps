@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Users, Plus, Edit2, Trash2, Music as MusicIcon, Mic, User } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, Music as MusicIcon, Mic, User, Upload } from 'lucide-react';
 import { Musician } from '../types';
 import { generateId } from '../utils/helpers';
+import { MusicianImport } from './MusicianImport';
 
 interface MusiciansProps {
   musicians: Musician[];
@@ -18,6 +19,7 @@ export const Musicians: React.FC<MusiciansProps> = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingMusician, setEditingMusician] = useState<Musician | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +43,9 @@ export const Musicians: React.FC<MusiciansProps> = ({
     musician.email = formData.get('email') as string;
     musician.phone = formData.get('phone') as string;
     musician.notes = formData.get('notes') as string;
+    musician.needsMic = formData.get('needsMic') === 'on';
+    musician.needsDI = formData.get('needsDI') === 'on';
+    musician.needsInputMic = formData.get('needsInputMic') === 'on';
 
     if (editingMusician) {
       onUpdateMusician(musician);
@@ -76,9 +81,14 @@ export const Musicians: React.FC<MusiciansProps> = ({
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">Musiciens</h2>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            <Plus size={20} /> Ajouter un musicien
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button className="btn btn-outline" onClick={() => setShowImport(true)}>
+              <Upload size={20} /> Importer
+            </button>
+            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+              <Plus size={20} /> Ajouter un musicien
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -178,6 +188,26 @@ export const Musicians: React.FC<MusiciansProps> = ({
         )}
       </div>
 
+      {/* Import Modal */}
+      {showImport && (
+        <div className="modal-overlay" onClick={() => setShowImport(false)}>
+          <div className="modal" style={{ maxWidth: '900px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Importer des musiciens</h3>
+              <button className="btn btn-small" onClick={() => setShowImport(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <MusicianImport
+                onImportComplete={(importedMusicians) => {
+                  importedMusicians.forEach(m => onAddMusician(m));
+                  setShowImport(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => {
@@ -272,6 +302,42 @@ export const Musicians: React.FC<MusiciansProps> = ({
                     defaultValue={editingMusician?.notes}
                   />
                 </div>
+
+                <div className="form-group">
+                  <label className="form-label" style={{ marginBottom: '1rem', fontWeight: 600, fontSize: '1rem' }}>Besoins techniques</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        name="needsMic"
+                        defaultChecked={editingMusician?.needsMic}
+                        style={{ width: '20px', height: '20px' }}
+                      />
+                      <Mic size={18} style={{ color: 'var(--primary)' }} />
+                      <span>Micro nécessaire</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        name="needsDI"
+                        defaultChecked={editingMusician?.needsDI}
+                        style={{ width: '20px', height: '20px' }}
+                      />
+                      <span style={{ fontSize: '1rem', fontWeight: 600 }}>DI</span>
+                      <span>Boîtier DI nécessaire</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        name="needsInputMic"
+                        defaultChecked={editingMusician?.needsInputMic}
+                        style={{ width: '20px', height: '20px' }}
+                      />
+                      <Mic size={18} style={{ color: 'var(--secondary)' }} />
+                      <span>Input Mic nécessaire</span>
+                    </label>
+                  </div>
+                </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => {
@@ -339,10 +405,17 @@ const MusicianCard: React.FC<MusicianCardProps> = ({ musician, onEdit, onDelete 
         </div>
       </div>
 
-      {(musician.email || musician.phone) && (
+      {(musician.email || musician.phone || musician.needsMic || musician.needsDI || musician.needsInputMic) && (
         <div style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: 'var(--gray)' }}>
           {musician.email && <div>📧 {musician.email}</div>}
           {musician.phone && <div>📱 {musician.phone}</div>}
+          {(musician.needsMic || musician.needsDI || musician.needsInputMic) && (
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+              {musician.needsMic && <span className="badge badge-success">🎤 Micro</span>}
+              {musician.needsDI && <span className="badge badge-info">DI</span>}
+              {musician.needsInputMic && <span className="badge badge-warning">🎙️ Input Mic</span>}
+            </div>
+          )}
         </div>
       )}
 

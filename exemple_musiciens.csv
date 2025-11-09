@@ -1,0 +1,11 @@
+Prénom,Nom,Instrument,Étudiant,Email,Téléphone,Micro,DI,InputMic,Notes
+Jean,Martin,Piano,oui,jean.martin@example.com,514-555-0101,non,oui,non,Étudiant avancé - besoin tabouret réglable
+Sophie,Dubois,Violon,non,sophie.dubois@example.com,514-555-0102,oui,non,non,Professionnelle - archet Français
+Pierre,Lambert,Saxophone Alto,non,pierre.lambert@example.com,514-555-0103,oui,non,oui,Jazz - préfère micro condensateur
+Marie,Tremblay,Chant,oui,marie.tremblay@example.com,514-555-0104,oui,non,non,Soprano - tessiture C4-C6
+Luc,Gagnon,Guitare Électrique,non,luc.gagnon@example.com,514-555-0105,non,oui,non,Fender Stratocaster - effet pédale
+Émilie,Roy,Flûte Traversière,oui,emilie.roy@example.com,514-555-0106,oui,non,non,Débutante - répertoire classique
+Thomas,Côté,Contrebasse,non,thomas.cote@example.com,514-555-0107,non,oui,non,Jazz - ampli Ampeg requis
+Camille,Bergeron,Piano,oui,camille.bergeron@example.com,514-555-0108,non,oui,non,Intermédiaire - préfère Yamaha
+Antoine,Moreau,Trompette,non,antoine.moreau@example.com,514-555-0109,oui,non,oui,Orchestre - sourdine disponible
+Julie,Lavoie,Violoncelle,non,julie.lavoie@example.com,514-555-0110,oui,non,non,Chambre - archet Allemand

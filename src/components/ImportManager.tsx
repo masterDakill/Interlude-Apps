@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Download, Box } from 'lucide-react';
-import { DropboxAutoImport } from './DropboxAutoImport';
+import { Download, Box, Database } from 'lucide-react';
+import { DropboxJsonImport } from './DropboxJsonImport';
 import { Model3DViewer } from './Model3DViewer';
+import { BackupManager } from './BackupManager';
 import { Song } from '../types';
 
 interface ImportManagerProps {
@@ -9,7 +10,7 @@ interface ImportManagerProps {
 }
 
 export const ImportManager: React.FC<ImportManagerProps> = ({ onImportComplete }) => {
-  const [activeTab, setActiveTab] = useState<'import' | '3d'>('import');
+  const [activeTab, setActiveTab] = useState<'import' | '3d' | 'backup'>('import');
 
   return (
     <div>
@@ -47,12 +48,39 @@ export const ImportManager: React.FC<ImportManagerProps> = ({ onImportComplete }
         >
           <Box size={18} /> Modèles 3D
         </button>
+        <button
+          className={`nav-button ${activeTab === 'backup' ? 'active' : ''}`}
+          onClick={() => setActiveTab('backup')}
+          style={{ 
+            borderBottom: activeTab === 'backup' ? '3px solid var(--secondary)' : 'none', 
+            padding: '0.75rem 1.5rem',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          <Database size={18} /> Sauvegarde
+        </button>
       </div>
 
       {/* Import Tab */}
       {activeTab === 'import' && (
         <div>
-          <DropboxAutoImport onImportComplete={onImportComplete} />
+          <DropboxJsonImport onImportComplete={(songs: Song[]) => {
+            // Adapter le format pour onImportComplete
+            onImportComplete({
+              songs,
+              audioFiles: [],
+              sheetMusic: [],
+            });
+          }} />
+        </div>
+      )}
+
+      {/* Backup Tab */}
+      {activeTab === 'backup' && (
+        <div>
+          <BackupManager />
         </div>
       )}
 
