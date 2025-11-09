@@ -7,7 +7,8 @@ import { SetlistPlanner } from './components/SetlistPlanner';
 import { ShowManagerNew } from './components/ShowManagerNew';
 import { CueSheet } from './components/CueSheet';
 import { Documents } from './components/Documents';
-import { Musicians } from './components/Musicians';
+import { MusiciansContainer } from './components/MusiciansContainer';
+import { SongsContainer } from './components/SongsContainer';
 import { VenueManager } from './components/VenueManager';
 import { Logo3D } from './components/Logo3D';
 import { ImportManager } from './components/ImportManager';
@@ -197,12 +198,7 @@ function App() {
 
       <main className="main-content">
         {activeTab === 'songs' && (
-          <SongsLibrary
-            songs={songs}
-            onAddSong={handleAddSong}
-            onUpdateSong={handleUpdateSong}
-            onDeleteSong={handleDeleteSong}
-          />
+          <SongsContainer />
         )}
         {activeTab === 'setlists' && (
           <SetlistPlanner
@@ -231,12 +227,7 @@ function App() {
           />
         )}
         {activeTab === 'musicians' && (
-          <Musicians
-            musicians={musicians}
-            onAddMusician={handleAddMusician}
-            onUpdateMusician={handleUpdateMusician}
-            onDeleteMusician={handleDeleteMusician}
-          />
+          <MusiciansContainer />
         )}
         {activeTab === 'venue' && (
           <VenueManager
