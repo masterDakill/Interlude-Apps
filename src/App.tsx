@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Music, ListMusic, Calendar, FileText, FolderOpen, Users, Maximize2 } from 'lucide-react';
-import { Song, Setlist, Show, Musician, VenueLayout } from './types';
+import { Music, ListMusic, Calendar, FileText, FolderOpen, Users, Maximize2, Download } from 'lucide-react';
+import { Song, Setlist, Show, Musician, VenueLayout, AudioFile, SheetMusicFile } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SongsLibrary } from './components/SongsLibrary';
 import { SetlistPlanner } from './components/SetlistPlanner';
@@ -10,9 +10,10 @@ import { Documents } from './components/Documents';
 import { Musicians } from './components/Musicians';
 import { VenueVisualizer } from './components/VenueVisualizer';
 import { Logo3D } from './components/Logo3D';
+import { ImportManager } from './components/ImportManager';
 import './App.css';
 
-type Tab = 'songs' | 'setlists' | 'shows' | 'cuesheet' | 'documents' | 'musicians' | 'venue';
+type Tab = 'songs' | 'setlists' | 'shows' | 'cuesheet' | 'documents' | 'musicians' | 'venue' | 'import';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('songs');
@@ -91,6 +92,32 @@ function App() {
     setVenueLayout(layout);
   };
 
+  const handleImportComplete = (importedData: {
+    songs: Song[];
+    audioFiles: { songId: string; file: AudioFile }[];
+    sheetMusic: { songId: string; file: SheetMusicFile }[];
+  }) => {
+    // Fusionner les chansons importées avec les existantes
+    const newSongs = importedData.songs.map(song => {
+      // Ajouter les fichiers audio et partitions à la chanson
+      const songAudio = importedData.audioFiles
+        .filter(a => a.songId === song.id)
+        .map(a => a.file);
+      const songSheets = importedData.sheetMusic
+        .filter(s => s.songId === song.id)
+        .map(s => s.file);
+      
+      return {
+        ...song,
+        audioFiles: songAudio,
+        sheetMusic: songSheets,
+      };
+    });
+
+    setSongs([...songs, ...newSongs]);
+    alert(`✅ Import réussi! ${newSongs.length} chansons importées.`);
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -152,6 +179,13 @@ function App() {
             Salle
           </button>
           <button
+            className={`nav-button ${activeTab === 'import' ? 'active' : ''}`}
+            onClick={() => setActiveTab('import')}
+          >
+            <Download size={20} />
+            Import
+          </button>
+          <button
             className={`nav-button ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
@@ -209,6 +243,11 @@ function App() {
             layout={venueLayout}
             musicians={musicians}
             onSaveLayout={handleSaveVenueLayout}
+          />
+        )}
+        {activeTab === 'import' && (
+          <ImportManager
+            onImportComplete={handleImportComplete}
           />
         )}
         {activeTab === 'documents' && (
