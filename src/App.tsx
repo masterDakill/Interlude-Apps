@@ -9,6 +9,7 @@ import { CueSheet } from './components/CueSheet';
 import { Documents } from './components/Documents';
 import { Musicians } from './components/Musicians';
 import { VenueVisualizer } from './components/VenueVisualizer';
+import { Logo3D } from './components/Logo3D';
 import './App.css';
 
 type Tab = 'songs' | 'setlists' | 'shows' | 'cuesheet' | 'documents' | 'musicians' | 'venue';
@@ -94,12 +95,14 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <div>
-            <h1 className="header-title">
-              <Music size={32} />
-              Interlude
-            </h1>
-            <p className="header-subtitle">Votre compagnon de gestion de spectacles</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <Logo3D size={80} />
+            <div>
+              <h1 className="header-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                Spectacle Interlude
+              </h1>
+              <p className="header-subtitle">Votre compagnon de gestion de spectacles</p>
+            </div>
           </div>
         </div>
       </header>

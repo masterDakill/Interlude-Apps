@@ -1,5 +1,6 @@
 import React from 'react';
 import { FolderOpen, ExternalLink, FileText, Music as MusicIcon, Image, Video } from 'lucide-react';
+import { Logo3D } from './Logo3D';
 
 export const Documents: React.FC = () => {
   const dropboxUrl = 'https://www.dropbox.com/scl/fo/jausnqqj81g7xhwbbfwi7/AGIxD2F502SFZ9Uo2NfAsU8?rlkey=3egvp2s8q9q44z3ltlruqhoq4&e=1&st=p492arh5&dl=0';
@@ -33,9 +34,41 @@ export const Documents: React.FC = () => {
 
   return (
     <div>
+      {/* Hero section with Logo */}
+      <div style={{
+        textAlign: 'center',
+        padding: '3rem 1rem',
+        background: 'linear-gradient(135deg, var(--cream) 0%, var(--white) 50%, var(--cream) 100%)',
+        borderRadius: '16px',
+        marginBottom: '2rem',
+        border: '2px solid var(--border)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <Logo3D size={150} />
+        </div>
+        <h1 style={{
+          fontFamily: "'Playfair Display', serif",
+          fontSize: '2.5rem',
+          fontWeight: 700,
+          color: 'var(--primary)',
+          marginBottom: '0.75rem',
+          textShadow: '2px 2px 4px rgba(139, 21, 56, 0.1)',
+        }}>
+          Spectacle Interlude
+        </h1>
+        <p style={{
+          fontSize: '1.25rem',
+          color: 'var(--secondary)',
+          fontWeight: 600,
+          fontFamily: "'Playfair Display', serif",
+        }}>
+          Élégance • Musique • Performance
+        </p>
+      </div>
+
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Documents Spectacle Interlude</h2>
+          <h2 className="card-title">Documents & Ressources</h2>
           <a
             href={dropboxUrl}
             target="_blank"
