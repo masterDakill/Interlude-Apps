@@ -13,5 +13,15 @@ export default defineConfig({
     hmr: {
       clientPort: 5174
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1000, // Augmente la limite à 1000 kB pour Firebase
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth']
+        }
+      }
+    }
   }
 })
