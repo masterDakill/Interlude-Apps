@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #8B1538;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #6B0F2B; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔥 Test Firebase Connection</h1>
+        <p>Ce test vérifie que Firebase est correctement configuré.</p>
+    </div>
+
+    <div class="card">
+        <h2>Configuration</h2>
+        <div id="config-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Test Connexion</h2>
+        <button onclick="testConnection()">Tester la Connexion</button>
+        <div id="connection-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Test Écriture</h2>
+        <button onclick="testWrite()">Ajouter une Chanson Test</button>
+        <div id="write-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Test Lecture</h2>
+        <button onclick="testRead()">Lire les Chansons</button>
+        <div id="read-status"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZqi57_XK-LNXFVNotiqXKYRUkNh-gHCo",
+            authDomain: "interludeapp-2ff3f.firebaseapp.com",
+            projectId: "interludeapp-2ff3f",
+            storageBucket: "interludeapp-2ff3f.appspot.com",
+            messagingSenderId: "1068934787939",
+            appId: "1:1068934787939:web:773c0131cba6c665671956"
+        };
+
+        // Initialiser Firebase
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            document.getElementById('config-status').innerHTML = '<div class="status success">✅ Firebase initialisé avec succès!</div>';
+        } catch (error) {
+            document.getElementById('config-status').innerHTML = `<div class="status error">❌ Erreur: ${error.message}</div>`;
+        }
+
+        // Test connexion
+        window.testConnection = async function() {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Test en cours...</div>';
+            
+            try {
+                const testCollection = collection(db, 'songs');
+                statusDiv.innerHTML = '<div class="status success">✅ Connexion Firestore réussie!</div>';
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Erreur: ${error.message}</div>`;
+            }
+        };
+
+        // Test écriture
+        window.testWrite = async function() {
+            const statusDiv = document.getElementById('write-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Ajout en cours...</div>';
+            
+            try {
+                const testSong = {
+                    title: 'Test Song - ' + new Date().toLocaleTimeString(),
+                    artist: 'Test Artist',
+                    key: 'C',
+                    tempo: 120,
+                    duration: 180,
+                    difficulty: 'medium',
+                    status: 'ready',
+                    tags: ['test'],
+                    audioFiles: [],
+                    sheetMusic: [],
+                    musicians: [],
+                    keyboardPatches: [],
+                    practiceLog: [],
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+
+                const docRef = await addDoc(collection(db, 'songs'), testSong);
+                statusDiv.innerHTML = `<div class="status success">✅ Chanson ajoutée avec ID: ${docRef.id}</div>`;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Erreur: ${error.message}<br><pre>${error.stack}</pre></div>`;
+            }
+        };
+
+        // Test lecture
+        window.testRead = async function() {
+            const statusDiv = document.getElementById('read-status');
+            statusDiv.innerHTML = '<div class="status info">⏳ Lecture en cours...</div>';
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, 'songs'));
+                const songs = [];
+                querySnapshot.forEach((doc) => {
+                    songs.push({ id: doc.id, ...doc.data() });
+                });
+
+                let html = `<div class="status success">✅ ${songs.length} chanson(s) trouvée(s)</div>`;
+                if (songs.length > 0) {
+                    html += '<pre>' + JSON.stringify(songs, null, 2) + '</pre>';
+                }
+                statusDiv.innerHTML = html;
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Erreur: ${error.message}<br><pre>${error.stack}</pre></div>`;
+            }
+        };
+    </script>
+</body>
+</html>
