@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Music, Users, Upload, CheckCircle, AlertCircle, Database } from 'lucide-react';
 import { musicianService } from '../services/musicianService';
 import { songService } from '../services/songService';
-import type { Musician } from '../types/musician';
-import type { Song } from '../types/song';
+import type { Musician, Song } from '../types';
 
 interface MigrationStats {
   musicians: {
