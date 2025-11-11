@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Music, ListMusic, Calendar, FileText, FolderOpen, Users, Maximize2, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Music, ListMusic, Calendar, FileText, FolderOpen, Users, Maximize2, Download, Database } from 'lucide-react';
 import { Song, Setlist, Show, Musician, VenueLayout, AudioFile, SheetMusicFile } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SongsLibrary } from './components/SongsLibrary';
@@ -12,12 +12,32 @@ import { SongsContainer } from './components/SongsContainer';
 import { VenueManager } from './components/VenueManager';
 import { Logo3D } from './components/Logo3D';
 import { ImportManager } from './components/ImportManager';
+import { DataMigration } from './components/DataMigration';
 import './App.css';
 
 type Tab = 'songs' | 'setlists' | 'shows' | 'cuesheet' | 'documents' | 'musicians' | 'venue' | 'import';
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('songs');
+  const [showMigration, setShowMigration] = useState(false);
+  const [hasLocalData, setHasLocalData] = useState(false);
+
+  // Vérifier si on a des données locales à migrer
+  useEffect(() => {
+    const checkLocalData = () => {
+      const localMusicians = JSON.parse(localStorage.getItem('musicians') || '[]');
+      const localSongs = JSON.parse(localStorage.getItem('songs') || '[]');
+      const hasData = localMusicians.length > 0 || localSongs.length > 0;
+      setHasLocalData(hasData);
+      
+      // Afficher automatiquement la migration si on a des données locales
+      if (hasData) {
+        setShowMigration(true);
+      }
+    };
+    
+    checkLocalData();
+  }, []);
   const [songs, setSongs] = useLocalStorage<Song[]>('interlude-songs', []);
   const [setlists, setSetlists] = useLocalStorage<Setlist[]>('interlude-setlists', []);
   const [shows, setShows] = useLocalStorage<Show[]>('interlude-shows', []);
@@ -123,15 +143,42 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1 }}>
             <Logo3D size={80} />
-            <div>
+            <div style={{ flex: 1 }}>
               <h1 className="header-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 Spectacle Interlude
               </h1>
               <p className="header-subtitle">Votre compagnon de gestion de spectacles</p>
             </div>
           </div>
+          
+          {/* Bouton Migration */}
+          {hasLocalData && (
+            <button
+              onClick={() => setShowMigration(true)}
+              className="migration-button"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+            >
+              <Database size={16} />
+              Migrer vers Firebase
+            </button>
+          )}
         </div>
       </header>
 
@@ -197,6 +244,11 @@ function App() {
       </nav>
 
       <main className="main-content">
+        {/* Modal de migration */}
+        {showMigration && (
+          <DataMigration onClose={() => setShowMigration(false)} />
+        )}
+        
         {activeTab === 'songs' && (
           <SongsContainer />
         )}

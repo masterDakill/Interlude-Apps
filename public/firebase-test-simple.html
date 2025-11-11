@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Firebase - Diagnostic Simple</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f3f4f6;
+    }
+    .container {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1f2937;
+      margin: 0 0 0.5rem 0;
+    }
+    .subtitle {
+      color: #6b7280;
+      margin: 0 0 2rem 0;
+    }
+    .status {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      font-weight: 500;
+    }
+    .success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+    .warning {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+    pre {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+    }
+    .step {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      background: #f9fafb;
+      border-left: 4px solid #3b82f6;
+      border-radius: 0.25rem;
+    }
+    .step-title {
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 0.5rem 0;
+    }
+    .step-desc {
+      color: #6b7280;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔥 Test Firebase - Diagnostic</h1>
+    <p class="subtitle">Vérification de la connexion et des permissions Firestore</p>
+
+    <div id="status"></div>
+    <div id="logs"></div>
+
+    <div class="step">
+      <p class="step-title">Étape 1: Tester la connexion</p>
+      <p class="step-desc">Vérifie si Firebase est correctement initialisé</p>
+      <button onclick="testConnection()">1️⃣ Tester Connexion</button>
+    </div>
+
+    <div class="step">
+      <p class="step-title">Étape 2: Tester l'écriture</p>
+      <p class="step-desc">Essaie d'écrire une chanson test dans Firestore</p>
+      <button onclick="testWrite()" id="btnWrite" disabled>2️⃣ Écrire Chanson Test</button>
+    </div>
+
+    <div class="step">
+      <p class="step-title">Étape 3: Lire les données</p>
+      <p class="step-desc">Récupère toutes les chansons de Firestore</p>
+      <button onclick="testRead()" id="btnRead" disabled>3️⃣ Lire Chansons</button>
+    </div>
+
+    <div id="instructions" style="display: none;" class="warning">
+      <strong>⚠️ Firestore n'est pas activé!</strong>
+      <ol style="margin: 1rem 0 0 1rem; padding: 0;">
+        <li>Allez sur <a href="https://console.firebase.google.com/project/interludeapp-2ff3f/firestore" target="_blank" style="color: #2563eb;">Firebase Console</a></li>
+        <li>Cliquez sur "Créer une base de données"</li>
+        <li>Choisissez "Mode test" (permet lecture/écriture pendant 30 jours)</li>
+        <li>Sélectionnez une région (ex: us-east1)</li>
+        <li>Cliquez "Activer"</li>
+        <li>Revenez ici et cliquez "1️⃣ Tester Connexion"</li>
+      </ol>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, Timestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZqi57_XK-LNXFVNotiqXKYRUkNh-gHCo",
+      authDomain: "interludeapp-2ff3f.firebaseapp.com",
+      projectId: "interludeapp-2ff3f",
+      storageBucket: "interludeapp-2ff3f.firebasestorage.app",
+      messagingSenderId: "1068934787939",
+      appId: "1:1068934787939:web:773c0131cba6c665671956"
+    };
+
+    let app, db;
+
+    function log(message, type = 'info') {
+      const logsDiv = document.getElementById('logs');
+      const logEntry = document.createElement('div');
+      logEntry.className = `status ${type}`;
+      logEntry.innerHTML = message;
+      logsDiv.appendChild(logEntry);
+      logsDiv.scrollTop = logsDiv.scrollHeight;
+    }
+
+    window.testConnection = async function() {
+      const statusDiv = document.getElementById('status');
+      const btnWrite = document.getElementById('btnWrite');
+      const btnRead = document.getElementById('btnRead');
+      const instructions = document.getElementById('instructions');
+      
+      try {
+        log('🔄 Initialisation de Firebase...', 'info');
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        
+        log('✅ Firebase initialisé avec succès!', 'success');
+        log(`📦 Projet: ${firebaseConfig.projectId}`, 'info');
+        
+        // Tester si Firestore est activé
+        log('🔍 Vérification de Firestore...', 'info');
+        try {
+          const testCollection = collection(db, 'songs');
+          const snapshot = await getDocs(testCollection);
+          
+          log(`✅ Firestore est activé! (${snapshot.size} chansons trouvées)`, 'success');
+          btnWrite.disabled = false;
+          btnRead.disabled = false;
+          instructions.style.display = 'none';
+          
+        } catch (firestoreError) {
+          if (firestoreError.code === 'permission-denied') {
+            log('❌ ERREUR: Permissions refusées', 'error');
+            log('💡 Les règles Firestore bloquent l\'accès. Vérifiez les règles dans la console Firebase.', 'warning');
+            instructions.style.display = 'block';
+          } else {
+            log(`❌ ERREUR Firestore: ${firestoreError.message}`, 'error');
+            log('💡 Firestore n\'est peut-être pas activé. Suivez les instructions ci-dessous:', 'warning');
+            instructions.style.display = 'block';
+          }
+        }
+        
+      } catch (error) {
+        log(`❌ ERREUR d'initialisation: ${error.message}`, 'error');
+        log(`Code: ${error.code}`, 'error');
+        console.error(error);
+      }
+    };
+
+    window.testWrite = async function() {
+      if (!db) {
+        log('❌ Firebase pas initialisé. Lancez d\'abord le test de connexion.', 'error');
+        return;
+      }
+      
+      try {
+        log('📝 Écriture d\'une chanson test...', 'info');
+        
+        const testSong = {
+          title: 'Test Firebase - ' + new Date().toLocaleTimeString(),
+          artist: 'Test Automatique',
+          duration: '3:00',
+          genre: 'Test',
+          tempo: 120,
+          key: 'C',
+          createdAt: Timestamp.now()
+        };
+        
+        const docRef = await addDoc(collection(db, 'songs'), testSong);
+        
+        log(`✅ Chanson écrite avec succès!`, 'success');
+        log(`📄 ID du document: ${docRef.id}`, 'success');
+        log(`<pre>${JSON.stringify(testSong, null, 2)}</pre>`, 'success');
+        
+        document.getElementById('btnRead').disabled = false;
+        
+      } catch (error) {
+        log(`❌ ERREUR d'écriture: ${error.message}`, 'error');
+        log(`Code: ${error.code}`, 'error');
+        console.error(error);
+        
+        if (error.code === 'permission-denied') {
+          log('💡 Solution: Vérifiez les règles Firestore dans la console Firebase', 'warning');
+        }
+      }
+    };
+
+    window.testRead = async function() {
+      if (!db) {
+        log('❌ Firebase pas initialisé. Lancez d\'abord le test de connexion.', 'error');
+        return;
+      }
+      
+      try {
+        log('📖 Lecture des chansons...', 'info');
+        
+        const snapshot = await getDocs(collection(db, 'songs'));
+        
+        log(`✅ ${snapshot.size} chanson(s) trouvée(s)`, 'success');
+        
+        if (snapshot.size === 0) {
+          log('ℹ️ Aucune chanson dans la base. Utilisez "Écrire Chanson Test" pour en ajouter une.', 'info');
+        } else {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            log(`<strong>🎵 ${data.title}</strong> - ${data.artist}`, 'success');
+            log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+          });
+        }
+        
+      } catch (error) {
+        log(`❌ ERREUR de lecture: ${error.message}`, 'error');
+        log(`Code: ${error.code}`, 'error');
+        console.error(error);
+      }
+    };
+
+    // Log initial
+    log('👋 Prêt à tester! Cliquez sur "1️⃣ Tester Connexion" pour commencer.', 'info');
+  </script>
+</body>
+</html>
